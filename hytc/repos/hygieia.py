@@ -135,6 +135,10 @@ class HygieiaRepo:
     def get_component_by_name(self, name):
         components = self._db.get_collection('components')
         doc = components.find_one({'name': name})
+
+        if doc is None:
+            return
+
         component = component_to_model(doc)
         return component
 

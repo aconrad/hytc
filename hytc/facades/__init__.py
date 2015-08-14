@@ -73,9 +73,9 @@ class Facade:
         builds = list(self.tc_repo.get_builds(build_type_id))
         builds = self.pluck_new_builds(builds)
 
-    def pluck_new_builds(self, builds):
-        for build in builds:
-            self.hygieia_repo.
+#    def pluck_new_builds(self, builds):
+#        for build in builds:
+#            self.hygieia_repo.
 
     def get_or_create_teamcity_collector_item(self):
         collector_item = self.hygieia_repo.get_collector_by_name()

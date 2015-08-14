@@ -37,7 +37,7 @@ def sync(app_name, dashboard, builds):
     )
 
     collector = f.get_or_create_teamcity_collector()
-    collector_item = f.get_or_create_teamcity_collector_item()
+#    collector_item = f.get_or_create_teamcity_collector_item()
 
     build_type_id = builds
     if build_type_id is not None:
