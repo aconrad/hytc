@@ -32,5 +32,4 @@ class TeamCityRepo:
         for build in builds['build']:
             full_build = self._tc.get_build_by_build_id(build['id'])
             build = build_to_model(full_build)
-            print(build)
             yield build

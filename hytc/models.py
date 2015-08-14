@@ -8,11 +8,44 @@ class Dashboard:
     def __init__(self):
         self.widgets = []
 
+    def has_build_widget(self):
+        for widget in self.widgets:
+            if widget.name == 'build':
+                return True
+        return False
+
 
 class Component:
     id = None
     name = None
     owner = None
+
+    def __repr__(self):
+        return 'Component(name={})'.format(self.name)
+
+
+class Collector:
+    id = None
+    name = None
+    type = None
+    enabled = True
+    online = True
+    last_executed = None
+
+    def __init__(self):
+        self.build_servers = []
+
+
+class Widget:
+    id = None
+    name = None
+    component = None
+
+    def __init__(self):
+        self.options = []
+
+    def __repr__(self):
+        return 'Widget(name={})'.format(self.name)
 
 
 class Build:

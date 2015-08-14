@@ -1,18 +1,78 @@
-from bson import DBRef
+from bson import DBRef, ObjectId
 from pymongo import MongoClient
-from hytc.models import Component, Dashboard
+from hytc.models import Component, Collector, Dashboard, Widget
+
+
+def collector_to_doc(collector):
+    doc = {
+        'buildServers': collector.build_servers,
+        'collectorType': collector.type,
+        'enabled': collector.enabled,
+        'lastExecuted': collector.last_executed,
+        'name': collector.name,
+        'online': collector.online,
+    }
+
+    if collector.id is not None:
+        doc['_id'] = collector.id
+
+    return doc
+
+
+def collector_to_model(doc):
+    collector = Collector()
+    collector.id = doc['_id']
+    collector.name = doc['name']
+    collector.type = doc['collectorType']
+    collector.enabled = doc['enabled']
+    collector.online = doc['online']
+    collector.last_executed = doc['lastExecuted']
+    collector.build_servers = doc['buildServers']
+
+    return collector
+
+
+def widget_to_model(doc):
+    widget = Widget()
+    widget.id = doc['_id']
+    widget.name = doc['name']
+    widget.options = doc['options']
+
+    component = Component()
+    component.id = doc['componentId']
+    widget.component = component
+
+    return widget
+
+
+def widget_to_doc(widget):
+    doc = {
+        '_id': widget.id,
+        'name': widget.name,
+        'componentId': widget.component.id,
+        'options': widget.options,
+    }
+
+    return doc
 
 
 def dashboard_to_model(doc):
     dashboard = Dashboard()
+    dashboard.id = doc['_id']
     dashboard.template = doc['template']
     dashboard.title = doc['title']
     dashboard.owner = doc['owner']
 
     application = Component()
     application.name = doc['application']['name']
+    application.id = doc['application']['components'][0].id
 
     dashboard.application = application
+
+    for widget_doc in doc['widgets']:
+        widget = widget_to_model(widget_doc)
+        dashboard.widgets.append(widget)
+
     return dashboard
 
 
@@ -25,15 +85,21 @@ def dashboard_to_doc(dashboard):
         ],
     }
 
-    widget_doc = []
+    widget_docs = []
+    for widget in dashboard.widgets:
+        widget_doc = widget_to_doc(widget)
+        widget_docs.append(widget_doc)
 
     doc = {
         'application': app_doc,
         'owner': dashboard.owner,
         'template': dashboard.template,
         'title': dashboard.title,
-        'widgets': widget_doc,
+        'widgets': widget_docs,
     }
+
+    if dashboard.id is not None:
+        doc['_id'] = dashboard.id
 
     return doc
 
@@ -78,12 +144,14 @@ class HygieiaRepo:
         result = components.insert(doc)
         component.id = result
 
-    def create_dashboard(self, dashboard):
-        doc = dashboard_to_doc(dashboard)
+    def save_dashboard(self, dashboard):
         dashboards = self._db.get_collection('dashboards')
         doc = dashboard_to_doc(dashboard)
-        result = dashboards.insert(doc)
-        dashboard.id = result
+        if dashboard.id is None:
+            result = dashboards.insert(doc)
+            dashboard.id = result
+        else:
+            result = dashboards.update({'_id': dashboard.id}, doc)
 
     def get_dashboard_by_title(self, dashboard_title):
         dashboards = self._db.get_collection('dashboards')
@@ -97,21 +165,30 @@ class HygieiaRepo:
         dashboard = dashboard_to_model(doc)
         return dashboard
 
-    def save_dashboard(self, dashboard):
-        doc = dashboard_to_doc(dashboard)
-        dashboards = self._db.get_collection('dashboards')
-        doc = dashboards.find_one({
-            'title': dashboard_title
-        })
+    def get_build_by_number(self, dashboard):
+        pass
+
+    def save_build(self, dashboard, build):
+        builds = self._db.get_collection('builds')
+
+    def get_collector_by_name(self, collector_name):
+        collectors = self._db.get_collection('collectors')
+        doc = collectors.find_one({'name': collector_name})
 
         if doc is None:
             return
 
-        dashboard = dashboard_to_model(doc)
-        return dashboard
+        collector = collector_to_model(doc)
+        return collector
 
-    def save_build(self, dashboard, build):
-        self._db.dashboards.insert()
+    def save_collector(self, collector):
+        doc = collector_to_doc(collector)
+        collectors = self._db.get_collection('collectors')
+        if collector.id is None:
+            result = collectors.insert(doc)
+            collector.id = result
+        else:
+            collectors.update({'_id': collector.id}, doc)
 
 {
     "_id": {

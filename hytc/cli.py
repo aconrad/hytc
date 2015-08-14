@@ -27,7 +27,7 @@ def sync(app_name, dashboard, builds):
         'dashboard',
     )
 
-    f = Facade(hygieia_repo)
+    f = Facade(tc_repo, hygieia_repo)
 
     dashboard_title = dashboard
     dashboard = f.get_or_create_dashboard(
@@ -36,6 +36,12 @@ def sync(app_name, dashboard, builds):
         app_name,
     )
 
-    for build in tc_repo.get_builds(builds):
-        # FIXME: insert build in mongo
-        pass
+    collector = f.get_or_create_teamcity_collector()
+    collector_item = f.get_or_create_teamcity_collector_item()
+
+    build_type_id = builds
+    if build_type_id is not None:
+        if not dashboard.has_build_widget():
+            f.add_and_save_build_widget(dashboard)
+
+        f.update_builds(dashboard, build_type_id)
