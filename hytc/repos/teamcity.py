@@ -4,7 +4,7 @@ from hytc.models import Build
 
 def build_to_model(build_data):
     build = Build()
-    build.id = build_data['id']
+#    build.id = build_data['id']
     build.number = build_data['number']
     build.status = build_data['status'].lower()
     build.url = build_data['webUrl']

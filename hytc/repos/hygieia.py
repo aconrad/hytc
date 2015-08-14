@@ -1,6 +1,26 @@
 from bson import DBRef, ObjectId
 from pymongo import MongoClient
-from hytc.models import Component, Collector, Dashboard, Widget
+from hytc.models import Component, Collector, CollectorItem, Dashboard, Widget
+
+
+def build_to_doc(build):
+    doc = {
+        'collectorItemId': build.collector_item_id,
+        'timestamp': build.timestamp,
+        'number': build.number,
+        'buildUrl': build.url,
+        'startTime': build.start_time,
+        'endTime': build.end_time,
+        'duration': build.duration,
+        'buildStatus': build.status,
+        'log': build.log,
+        'sourceChangeSet': build.source_changeset,
+    }
+
+    if build.id is not None:
+        doc['_id'] = build.id
+
+    return doc
 
 
 def collector_to_doc(collector):
@@ -17,6 +37,29 @@ def collector_to_doc(collector):
         doc['_id'] = collector.id
 
     return doc
+
+def collector_item_to_doc(collector_item):
+    doc = {
+        'description': collector_item.description,
+        'enabled': collector_item.enabled,
+        'collectorId': collector_item.collector_id,
+        'options': collector_item.options,
+    }
+
+    if collector_item.id is not None:
+        doc['_id'] = collector_item.id
+
+    return doc
+
+
+def collector_item_to_model(doc):
+    collector_item = CollectorItem()
+    collector_item.id = doc['_id']
+    collector_item.description = doc['description']
+    collector_item.enabled = doc['enabled']
+    collector_item.collector_id = doc['collectorId']
+    collector_item.options = doc['options']
+    return collector_item
 
 
 def collector_to_model(doc):
@@ -79,6 +122,7 @@ def dashboard_to_model(doc):
 def dashboard_to_doc(dashboard):
     application = dashboard.application
     app_doc = {
+        '_class': "com.capitalone.dashboard.model.Dashboard",
         'name': application.name,
         'components': [
             DBRef('components', application.id)
@@ -169,11 +213,14 @@ class HygieiaRepo:
         dashboard = dashboard_to_model(doc)
         return dashboard
 
-    def get_build_by_number(self, dashboard):
-        pass
-
-    def save_build(self, dashboard, build):
+    def save_build(self, build):
+        doc = build_to_doc(build)
         builds = self._db.get_collection('builds')
+        if build.id is None:
+            result = builds.insert(doc)
+            build.id = result
+        else:
+            builds.update({'_id': build.id}, doc)
 
     def get_collector_by_name(self, collector_name):
         collectors = self._db.get_collection('collectors')
@@ -184,6 +231,25 @@ class HygieiaRepo:
 
         collector = collector_to_model(doc)
         return collector
+
+    def get_collector_item_by_name(self, name):
+        collector_items = self._db.get_collection('collector_items')
+        doc = collector_items.find_one({'description': name})
+
+        if doc is None:
+            return
+
+        collector_item = collector_item_to_model(doc)
+        return collector_item
+
+    def save_collector_item(self, collector_item):
+        doc = collector_item_to_doc(collector_item)
+        collector_items = self._db.get_collection('collector_items')
+        if collector_item.id is None:
+            result = collector_items.insert(doc)
+            collector_item.id = result
+        else:
+            collector_items.update({'_id': collector_item.id}, doc)
 
     def save_collector(self, collector):
         doc = collector_to_doc(collector)

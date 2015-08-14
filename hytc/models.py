@@ -36,6 +36,16 @@ class Collector:
         self.build_servers = []
 
 
+class CollectorItem:
+    id = None
+    description = None
+    enabled = None
+    collector_id = None
+
+    def __init__(self):
+        self.options = []
+
+
 class Widget:
     id = None
     name = None
@@ -51,6 +61,7 @@ class Widget:
 class Build:
 
     id = None
+    collector_item_id = None
     artifact_version = None
     duration = None
     end_time = None
@@ -59,6 +70,8 @@ class Build:
     started_by = None
     status = None  # success, failure, unstable, aborted, unknown
     url = None
+    timestamp = None
+    log = None
 
     def __init__(self):
         self.source_changeset = []

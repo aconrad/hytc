@@ -1,6 +1,6 @@
 import time
 from bson import ObjectId
-from hytc.models import Dashboard, Component, Widget, Collector
+from hytc.models import Dashboard, Component, Widget, Collector, CollectorItem
 
 
 def epoch_now():
@@ -42,6 +42,7 @@ class Facade:
         dashboard.template = dash_template
         dashboard.title = dash_title
         dashboard.application = application
+        dashboard.owner = 'aconrad'
         self.hygieia_repo.save_dashboard(dashboard)
 
         return dashboard
@@ -69,16 +70,50 @@ class Facade:
         dashboard.widgets.append(widget)
         self.hygieia_repo.save_dashboard(dashboard)
 
-    def update_builds(self, dashboard, build_type_id):
+    def update_builds(self, collector_item, build_type_id):
         builds = list(self.tc_repo.get_builds(build_type_id))
-        builds = self.pluck_new_builds(builds)
 
-#    def pluck_new_builds(self, builds):
-#        for build in builds:
-#            self.hygieia_repo.
+        for build in builds:
+            build.collector_item_id = collector_item.id
+            self.hygieia_repo.save_build(build)
 
-    def get_or_create_teamcity_collector_item(self):
-        collector_item = self.hygieia_repo.get_collector_by_name()
+        return build
+
+    def create_build_from_tc_data(self, collector_item, build_data):
+        build = Build()
+        build.number = build_data['number']
+        build.status = build_data['status']
+        build.url = build_data['buildUrl']
+        build.collector_item_id = collector_item.id
+        return build
+
+    def pluck_new_builds(self, builds):
+        for build in builds:
+            self.hygieia_repo.get_build_by_number
+
+    def create_collector_item(self, collector, description):
+        collector_item = CollectorItem()
+        collector_item.collector_id = collector.id
+        collector_item.description = description
+        collector_item.enabled = True
+        collector_item.options.append({
+            'jobName': description,
+            'jobUrl': 'https://tcserver.corp.surveymonkey.com/viewType.html?buildTypeId={}'.format(description),
+            'instanceUrl': 'https://tcserver.corp.surveymonkey.com',
+        })
+        self.hygieia_repo.save_collector_item(collector_item)
+        return collector_item
+
+    def get_or_create_teamcity_collector_item(self, collector, build_type_id):
+        collector_item = \
+            self.hygieia_repo.get_collector_item_by_name(build_type_id)
+
+        if collector_item is None:
+            collector_item = self.create_collector_item(
+                collector, build_type_id
+            )
+
+        return collector_item
 
     def get_or_create_teamcity_collector(self):
         collector_name = 'TeamCity'

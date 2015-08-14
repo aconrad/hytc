@@ -36,12 +36,14 @@ def sync(app_name, dashboard, builds):
         app_name,
     )
 
-    collector = f.get_or_create_teamcity_collector()
-#    collector_item = f.get_or_create_teamcity_collector_item()
-
     build_type_id = builds
+    collector = f.get_or_create_teamcity_collector()
+    collector_item = f.get_or_create_teamcity_collector_item(
+        collector, build_type_id
+    )
+
     if build_type_id is not None:
         if not dashboard.has_build_widget():
             f.add_and_save_build_widget(dashboard)
 
-        f.update_builds(dashboard, build_type_id)
+        f.update_builds(collector_item, build_type_id)
