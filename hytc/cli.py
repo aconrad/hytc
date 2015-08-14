@@ -1,14 +1,16 @@
 import os
 import click
+from hytc.facades import Facade
 
 
 hytc = click.Group()
 
 
 @hytc.command()
-@click.argument('project_name')
-@click.argument('build_name')
-def sync(project_name, build_name):
+@click.argument('app_name')
+@click.argument('dashboard')
+@click.option('-b', '--builds')
+def sync(app_name, dashboard, builds):
     from hytc.repos import TeamCityRepo
     from hytc.repos import HygieiaRepo
 
@@ -22,10 +24,18 @@ def sync(project_name, build_name):
     hygieia_repo = HygieiaRepo(
         'hygieia.corp.surveymonkey.com',
         27017,
-        'test',
+        'dashboard',
     )
 
-    tc_repo.get_projects()
+    f = Facade(hygieia_repo)
 
-    for build in tc_repo.get_builds():
-        print(build)
+    dashboard_title = dashboard
+    dashboard = f.get_or_create_dashboard(
+        'capone',
+        dashboard_title,
+        app_name,
+    )
+
+    for build in tc_repo.get_builds(builds):
+        # FIXME: insert build in mongo
+        pass

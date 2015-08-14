@@ -1,3 +1,20 @@
+class Dashboard:
+    application = None
+    id = None
+    owner = None
+    template = None
+    title = None
+
+    def __init__(self):
+        self.widgets = []
+
+
+class Component:
+    id = None
+    name = None
+    owner = None
+
+
 class Build:
 
     id = None
@@ -16,7 +33,7 @@ class Build:
     def __repr__(self):
         return (
             'Build('
-            'id={id}'
+            'id={id}, '
             'number={number}, '
             'status={status}'
         ')').format(
