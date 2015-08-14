@@ -96,11 +96,11 @@ class Facade:
         collector_item.collector_id = collector.id
         collector_item.description = description
         collector_item.enabled = True
-        collector_item.options.append({
+        collector_item.options = {
             'jobName': description,
             'jobUrl': 'https://tcserver.corp.surveymonkey.com/viewType.html?buildTypeId={}'.format(description),
             'instanceUrl': 'https://tcserver.corp.surveymonkey.com',
-        })
+        }
         self.hygieia_repo.save_collector_item(collector_item)
         return collector_item
 

@@ -43,7 +43,7 @@ class CollectorItem:
     collector_id = None
 
     def __init__(self):
-        self.options = []
+        self.options = {}
 
 
 class Widget:
