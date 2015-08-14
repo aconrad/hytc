@@ -44,6 +44,6 @@ def sync(app_name, dashboard, builds):
 
     if build_type_id is not None:
         if not dashboard.has_build_widget():
-            f.add_and_save_build_widget(dashboard)
+            f.add_and_save_widget(dashboard)
 
         f.update_builds(collector_item, build_type_id)

@@ -52,7 +52,7 @@ class Widget:
     component = None
 
     def __init__(self):
-        self.options = []
+        self.options = {}
 
     def __repr__(self):
         return 'Widget(name={})'.format(self.name)

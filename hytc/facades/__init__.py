@@ -56,17 +56,17 @@ class Facade:
 
         return dashboard
 
-    def add_and_save_build_widget(self, dashboard):
+    def add_and_save_widget(self, dashboard):
         widget = Widget()
         # Mongo doesn't generate ids for sub-documents
         widget.id = ObjectId()
         widget.name = 'build'
         widget.component = dashboard.application
-        widget.options.append({
-            'build_duration_threshold': 3,
+        widget.options = {
+            'buildDurationThreshold': 3,
             'id': 'build0',
-            'consecutive_failure_threshold': 5,
-        })
+            'consecutiveFailureThreshold': 5,
+        }
         dashboard.widgets.append(widget)
         self.hygieia_repo.save_dashboard(dashboard)
 
